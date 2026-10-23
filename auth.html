@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#000000" />
+<script>try{var t=localStorage.getItem("kojo_theme_v1")==="light"?"light":"dark";document.documentElement.setAttribute("data-theme",t);if(t==="light")document.querySelector("meta[name=theme-color]").setAttribute("content","#f3f4f7")}catch(e){}</script>
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>ورود به KOJO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Vazirmatn:wght@300;400;500;600;700;800;900&family=Six+Caps&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* KOJO tokens — aligned with index (accent = #ff0000, surfaces = black / #0d0d0d) */
+  --lime:#ff0000;--lime-soft:rgba(255,0,0,.12);--lime-ink:#ff0000;
+  --bg:#000000;--card:#0d0d0d;--field:#000000;--line:rgba(255,255,255,.08);
+  --txt:#f4f4f5;--strong:#ffffff;--mute:#a1a1aa;--dim:#71717a;--err:#fb7185;
+  --fill:rgba(255,255,255,.04);--fill2:rgba(255,255,255,.08);--hair:rgba(255,255,255,.1);--grab:rgba(255,255,255,.2);
+  --dots:rgba(255,255,255,.055);--page:#050506;--shadow:rgba(0,0,0,.55);
+  --ease:cubic-bezier(.22,1,.36,1);--spring:cubic-bezier(.34,1.56,.64,1);
+  --vh:100dvh;
+}
+/* light theme (same palette as index: #f3f4f7 / #fff / #eceef3 / #151519) */
+html[data-theme=light]{
+  --lime-soft:rgba(255,0,0,.08);--lime-ink:#c80000;
+  --bg:#f3f4f7;--card:#ffffff;--field:#eceef3;--line:rgba(15,23,42,.09);
+  --txt:#151519;--strong:#151519;--mute:#5d616b;--dim:#8a8f9a;--err:#e11d48;
+  --fill:rgba(15,23,42,.04);--fill2:rgba(15,23,42,.08);--hair:rgba(15,23,42,.1);--grab:rgba(15,23,42,.2);
+  --dots:rgba(15,23,42,.08);--page:#e6e8ee;--shadow:rgba(15,23,42,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--page)}
+body{color:var(--txt);font-family:'Vazirmatn','Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased;overscroll-behavior:none;display:flex;align-items:center;justify-content:center}
+button,input,select{font-family:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+
+/* ===== app column (full screen on phones, phone-like frame on desktop) ===== */
+.app{
+  position:relative;width:100%;max-width:480px;height:var(--vh);
+  display:flex;flex-direction:column;background:var(--bg);overflow:hidden;
+}
+@media(min-width:521px){
+  .app{height:min(calc(var(--vh) - 32px),860px);border-radius:44px;border:1px solid var(--hair);box-shadow:0 30px 90px var(--shadow)}
+}
+.glow{position:absolute;left:50%;top:-230px;width:640px;height:640px;transform:translateX(-50%);pointer-events:none;
+  background:radial-gradient(circle,rgba(255,0,0,.17),rgba(255,0,0,0) 68%);animation:glow 7s ease-in-out infinite alternate}
+.dots{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(var(--dots) 1px,transparent 1px);background-size:22px 22px;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0,transparent 46%);mask-image:linear-gradient(to bottom,#000 0,transparent 46%)}
+@keyframes glow{from{opacity:.65;transform:translateX(-50%) scale(.95)}to{opacity:1;transform:translateX(-50%) scale(1.06)}}
+
+/* ===== hero (avatars + title) ===== */
+.hero{position:relative;z-index:2;flex-shrink:0;padding:max(14px,env(safe-area-inset-top)) 20px 20px;text-align:center}
+.mini{display:flex;align-items:center;justify-content:center;height:92px}
+.hero.tight .mini{height:76px}
+.hero.tight .brand{height:68px}
+.brand{height:84px;width:auto;color:var(--strong);direction:ltr;filter:drop-shadow(0 4px 18px rgba(255,0,0,.35))}
+.logo{width:32px;height:32px;border-radius:9999px;background:var(--lime);color:#000;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 2px var(--bg),0 0 0 4px rgba(255,0,0,.4),0 6px 22px rgba(255,0,0,.3)}
+.logo svg{width:16px;height:16px}
+.word{font-family:'Six Caps','Plus Jakarta Sans',sans-serif;font-size:40px;line-height:.8;letter-spacing:.03em;color:var(--strong);direction:ltr;padding-top:5px}
+
+.stage{position:relative;height:206px;width:290px;margin:8px auto 0;direction:ltr;transition:height .55s var(--ease)}
+.stage-in{position:absolute;left:0;top:0;width:290px;height:206px;transform-origin:50% 0;transition:transform .55s var(--ease)}
+.av{position:absolute;border-radius:50%;overflow:hidden;box-shadow:0 14px 34px rgba(0,0,0,.55),0 0 0 4px var(--bg),0 0 0 6px rgba(255,0,0,.25);animation:bob 5s ease-in-out infinite}
+.av svg{display:block;width:100%;height:100%}
+.av.a{width:100px;height:100px;left:14px;top:22px}
+.av.b{width:80px;height:80px;right:8px;top:4px;animation-delay:-1.6s;animation-duration:6s}
+.av.c{width:74px;height:74px;left:112px;top:118px;animation-delay:-3s;animation-duration:5.5s}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.bub{position:absolute;left:96px;top:88px;z-index:3;padding:7px 20px;border-radius:9999px;background:rgba(255,255,255,.12);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.2);font-size:16px;font-weight:900;color:#fff;transform:rotate(-8deg);box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.pd{position:absolute;border-radius:50%;animation:bob 6s ease-in-out infinite}
+.pd.p1{width:26px;height:26px;left:-34px;top:6px;background:rgba(255,0,0,.28)}
+.pd.p2{width:12px;height:12px;left:6px;top:150px;background:rgba(255,255,255,.55)}
+.pd.p3{width:30px;height:30px;left:14px;top:176px;background:rgba(255,255,255,.1);animation-delay:-2s}
+.pd.p4{width:12px;height:12px;right:-6px;top:88px;background:var(--lime);animation-delay:-1s;box-shadow:0 0 14px rgba(255,0,0,.7)}
+.pd.p5{width:30px;height:30px;right:-40px;top:-2px;background:rgba(255,0,0,.18);animation-delay:-3s}
+.pd.p6{width:8px;height:8px;right:32px;top:150px;background:rgba(255,0,0,.7)}
+
+.title{margin-top:14px;font-size:24px;font-weight:900;line-height:1.45;color:var(--strong);transition:font-size .4s var(--ease),margin .4s var(--ease)}
+.title .hl{color:var(--lime-ink)}
+.hero.compact .stage,.hero.tight .stage{height:116px}
+.hero.compact .stage-in,.hero.tight .stage-in{transform:scale(.56)}
+.hero.compact .title,.hero.tight .title{font-size:20px;margin-top:8px}
+
+/* ===== bottom card ===== */
+.card{position:relative;z-index:3;flex:1;min-height:0;display:flex;flex-direction:column;background:var(--card);
+  border-radius:34px 34px 0 0;border-top:1px solid var(--hair);box-shadow:0 -18px 50px var(--shadow)}
+.card::before{content:"";position:absolute;top:-1px;left:50%;width:120px;height:2px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(255,0,0,.7),transparent);border-radius:2px}
+
+.view{display:none;position:relative;z-index:1;flex:1;min-height:0;flex-direction:column}
+.view.show{display:flex;animation:viewIn .5s var(--ease) both}
+@keyframes viewIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:22px 22px 14px;scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+
+#v-login .body{display:flex;flex-direction:column;justify-content:center}
+.p{font-size:12.5px;line-height:1.9;color:var(--mute);text-align:center;margin-bottom:18px}
+.p b{color:var(--strong);font-weight:800;direction:ltr;unicode-bidi:embed}
+
+/* ===== fields ===== */
+.fields{display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.lbl{font-size:11.5px;font-weight:800;color:var(--mute);letter-spacing:.02em;display:flex;justify-content:space-between}
+.box{position:relative;display:flex;align-items:center;gap:10px;height:56px;padding:0 14px;background:var(--fill);border:1px solid var(--line);border-radius:18px;transition:border-color .25s,background .25s,box-shadow .25s}
+.box:focus-within{border-color:rgba(255,0,0,.55);background:rgba(255,0,0,.05);box-shadow:0 0 0 4px rgba(255,0,0,.08)}
+.box.bad{border-color:rgba(251,113,133,.7);background:rgba(251,113,133,.05)}
+.box .ic{flex-shrink:0;width:20px;height:20px;color:var(--mute);transition:color .25s}
+.box:focus-within .ic{color:var(--lime-ink)}
+.box input{flex:1;min-width:0;height:100%;background:none;border:0;outline:0;font-size:16px;font-weight:600}
+.box input::placeholder{color:var(--dim);font-weight:500}
+.ltr{direction:ltr;text-align:left}
+.err{font-size:11.5px;color:var(--err);font-weight:600;max-height:0;overflow:hidden;opacity:0;transition:max-height .3s,opacity .3s;line-height:1.7}
+.err.on{max-height:50px;opacity:1}
+.ok-ic{flex-shrink:0;color:var(--lime-ink);width:0;height:20px;opacity:0;transform:scale(.5);transition:.3s var(--spring)}
+.box.valid .ok-ic{width:20px;opacity:1;transform:none}
+
+/* phone row: country pill + number (like the reference) */
+.prow{display:flex;gap:10px;direction:ltr}
+.cc{flex-shrink:0;display:flex;align-items:center;gap:8px;height:56px;padding:0 13px;border-radius:18px;background:var(--fill);border:1px solid var(--line);font-size:14px;font-weight:800}
+.cc .fl{width:24px;height:24px;border-radius:50%;background:var(--lime);color:#000;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.cc svg{width:14px;height:14px;color:var(--mute)}
+.prow .box{flex:1;min-width:0}
+
+/* pick buttons (city / date parts) */
+.pick{width:100%;text-align:right}
+.pick .v{flex:1;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pick .v.ph{color:var(--dim);font-weight:500}
+.pick .chev{width:18px;height:18px;color:var(--mute);flex-shrink:0}
+.pick.has .ic{color:var(--lime-ink)}
+.row3{display:grid;grid-template-columns:.85fr 1.35fr 1fr;gap:8px;direction:rtl}
+.row3 .box{height:52px;padding:0 12px;border-radius:16px;justify-content:center;gap:6px}
+.row3 .pick .v{text-align:center;flex:1;font-size:14.5px}
+.row3 .chev{width:14px;height:14px;transform:rotate(-90deg)}
+.row3 .pick.has{border-color:rgba(255,0,0,.4);background:rgba(255,0,0,.07)}
+.row3 .pick.has .v{color:var(--strong);font-weight:800}
+.bd{font-size:12.5px;font-weight:700;color:var(--lime-ink);text-align:center;min-height:0;max-height:0;overflow:hidden;opacity:0;transition:.3s}
+.bd.on{max-height:30px;opacity:1;margin-top:2px}
+
+/* ===== bottom dome button (like the reference's "Sign In" bump) ===== */
+.subwrap{flex-shrink:0;padding:10px 22px 14px}
+.card[data-s="otp"] .subwrap{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+.card[data-s="otp"] .dock{display:none}
+.btn svg{width:20px;height:20px}
+.btn:disabled{opacity:.6;pointer-events:none}
+.btn .spin{display:none;width:22px;height:22px;border:3px solid rgba(0,0,0,.2);border-top-color:#000;border-radius:50%;animation:sp .7s linear infinite}
+.btn.load .spin{display:block}.btn.load .lbtn{display:none}
+
+/* ===== bottom switcher: ورود | ثبت‌نام with a sliding wave ===== */
+.dock{position:relative;flex-shrink:0;display:grid;grid-template-columns:1fr 1fr;direction:rtl;height:calc(70px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom)}
+.wv{position:absolute;left:0;top:0;width:210px;height:70px;z-index:0;pointer-events:none;will-change:transform}
+.wv.ready{transition:transform .65s cubic-bezier(.34,1.32,.5,1)}
+.wv svg{display:block;width:100%;height:100%;overflow:visible;transform-origin:50% 100%;filter:drop-shadow(0 -6px 16px rgba(255,0,0,.28))}
+.wv path{fill:var(--lime)}
+.wv::after{content:"";position:absolute;left:50%;top:100%;width:130px;height:env(safe-area-inset-bottom);transform:translateX(-50%);background:var(--lime)}
+.wv.moving svg{animation:squish .65s var(--ease)}
+@keyframes squish{0%{transform:none}30%{transform:scaleX(1.16) scaleY(.88)}100%{transform:none}}
+.dk{position:relative;z-index:1;height:70px;padding-top:16px;font-size:15px;font-weight:800;color:var(--mute);transition:color .35s var(--ease),transform .5s var(--ease),letter-spacing .4s}
+.dk.on{color:#000;font-weight:900;transform:translateY(-2px)}
+.dk:not(.on):active{color:var(--strong)}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.btn{position:relative;width:100%;height:58px;border-radius:9999px;background:var(--lime);color:#000;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center;gap:10px;overflow:hidden;box-shadow:0 10px 34px rgba(255,0,0,.28);transition:transform .25s var(--ease),opacity .25s}
+.btn:active{transform:scale(.97)}
+.link{font-size:13px;font-weight:800;color:var(--lime-ink)}
+.fine{margin-top:16px;text-align:center;font-size:11.5px;line-height:1.9;color:var(--dim)}
+.fine a{color:var(--txt);text-decoration:none;border-bottom:1px solid var(--grab)}
+
+/* ===== OTP ===== */
+.otp-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.tag{font-size:11.5px;color:var(--mute);font-weight:600}
+.rb{width:42px;height:42px;border-radius:9999px;background:var(--fill2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.rb:active{transform:scale(.92)}.rb svg{width:18px;height:18px}
+.otp-hero{display:flex;flex-direction:column;align-items:center;text-align:center}
+.ring{position:relative;width:84px;height:84px;margin-bottom:14px}
+.ring svg.r{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.ring .tr{fill:none;stroke:var(--fill2);stroke-width:4}
+.ring .pr{fill:none;stroke:var(--lime);stroke-width:4;stroke-linecap:round;stroke-dasharray:289;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear;filter:drop-shadow(0 0 6px rgba(255,0,0,.55))}
+.ring .in{position:absolute;inset:11px;border-radius:50%;background:var(--lime-soft);border:1px solid rgba(255,0,0,.3);color:var(--lime-ink);display:flex;align-items:center;justify-content:center;animation:float 3s ease-in-out infinite}
+.ring .in svg{width:28px;height:28px}
+@keyframes float{50%{transform:translateY(-4px)}}
+.ring.end .pr{stroke:var(--dim);filter:none}
+.chip{display:inline-flex;align-items:center;gap:8px;margin-top:2px;padding:8px 14px;border-radius:9999px;background:var(--fill);border:1px solid var(--line);font-size:13px;font-weight:800;direction:ltr;transition:background .2s}
+.chip:active{background:var(--fill2)}
+.chip svg{width:15px;height:15px;color:var(--lime-ink)}
+.otp{display:flex;gap:8px;direction:ltr;justify-content:center;margin-top:22px}
+.otp input{flex:1;min-width:0;max-width:56px;height:64px;text-align:center;font-size:26px;font-weight:900;background:var(--field);border:1.5px solid var(--line);border-radius:20px;outline:0;caret-color:var(--lime);transition:.25s var(--ease)}
+.otp input:focus{border-color:rgba(255,0,0,.65);background:rgba(255,0,0,.06);box-shadow:0 0 0 5px rgba(255,0,0,.09),0 8px 24px rgba(255,0,0,.08);transform:translateY(-3px)}
+.otp input.f{border-color:rgba(255,0,0,.4);color:var(--lime-ink);background:rgba(255,0,0,.06);animation:tick .25s var(--spring)}
+@keyframes tick{from{transform:scale(.9)}to{transform:none}}
+.otp.bad input{border-color:rgba(251,113,133,.85);color:var(--err);background:rgba(251,113,133,.06);animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.otp-err{text-align:center;margin-top:12px}
+.resend{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin-top:16px;font-size:13px;color:var(--mute);min-height:24px}
+.timer{direction:ltr;font-weight:800;color:var(--strong);font-variant-numeric:tabular-nums}
+.devhint{margin-top:16px;padding:10px 12px;border-radius:14px;background:rgba(251,191,36,.08);border:1px dashed rgba(251,191,36,.35);color:#fcd34d;font-size:11.5px;text-align:center;line-height:1.8}
+.devhint b{direction:ltr;unicode-bidi:embed;letter-spacing:.15em}
+
+/* ===== success (full overlay) ===== */
+#v-done{position:absolute;inset:0;z-index:10;background:var(--bg);flex:none}
+.done{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+.done .ck{width:96px;height:96px;border-radius:50%;background:var(--lime);color:#000;margin-bottom:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 10px rgba(255,0,0,.12),0 12px 50px rgba(255,0,0,.4);animation:pop .6s var(--spring) both}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
+.done .ck svg{width:44px;height:44px;stroke-dasharray:40;stroke-dashoffset:40;animation:dash .5s .3s ease forwards}
+@keyframes dash{to{stroke-dashoffset:0}}
+.done .h{font-size:23px;font-weight:900;color:var(--strong);margin-bottom:6px;line-height:1.5}
+
+/* ===== bottom sheets (city / date pickers) ===== */
+.ov{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.66);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:opacity .3s,visibility 0s .42s}
+.ov.open{opacity:1;visibility:visible;transition:opacity .3s,visibility 0s}
+.sheet{width:100%;max-width:520px;max-height:min(92dvh,calc(var(--vh) - 8px));display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-bottom:0;border-radius:28px 28px 0 0;box-shadow:0 -20px 60px var(--shadow);transform:translateY(100%);transition:transform .42s var(--ease);color:var(--txt)}
+.ov.open .sheet{transform:none}
+.sheet.tall{height:min(78dvh,calc(var(--vh) - 24px))}
+@media(min-width:640px){.ov{align-items:center}.sheet{border-radius:28px;border-bottom:1px solid var(--line)}}
+.grab{width:42px;height:5px;border-radius:9px;background:var(--grab);margin:10px auto 0;flex-shrink:0}
+.sh-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px 10px;flex-shrink:0}
+.sh-h h3{font-size:17px;font-weight:800;color:var(--strong)}
+.sh-h small{display:block;margin-top:2px;font-size:12px;font-weight:500;color:var(--mute)}
+.sh-x{width:40px;height:40px;border-radius:9999px;background:var(--fill2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sh-x svg{width:18px;height:18px}
+.sh-b{flex:1;min-height:0;display:flex;flex-direction:column;padding:0 20px}
+.sh-f{flex-shrink:0;display:flex;gap:10px;padding:14px 20px calc(14px + env(safe-area-inset-bottom))}
+.sh-f .btn{height:52px;margin:0;flex:1.6;box-shadow:0 8px 26px rgba(255,0,0,.22)}
+.sh-f .ghost{flex:1;height:52px;border-radius:9999px;background:var(--card);border:1px solid var(--line);color:var(--txt);font-size:14px;font-weight:700}
+.sw{position:relative;flex-shrink:0;margin-bottom:10px}
+.sw svg{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--dim);pointer-events:none}
+.sw input{width:100%;height:50px;padding:0 42px 0 14px;background:var(--field);border:1px solid var(--line);border-radius:16px;outline:0;font-size:15px;font-weight:600}
+.sw input:focus{border-color:rgba(255,0,0,.5)}
+.plist{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;display:flex;flex-direction:column;gap:8px;padding:2px 0 calc(16px + env(safe-area-inset-bottom))}
+.row{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;padding:10px 14px;border-radius:18px;background:var(--fill);border:1px solid var(--line);color:var(--strong);text-align:right;flex-shrink:0;transition:background .2s,border-color .2s}
+.row:active{transform:scale(.99)}
+.row.on{background:rgba(255,0,0,.08);border-color:rgba(255,0,0,.4)}
+.row .ri{flex-shrink:0;width:38px;height:38px;border-radius:12px;background:var(--fill2);display:flex;align-items:center;justify-content:center;color:var(--lime-ink)}
+.row .ri svg{width:18px;height:18px}
+.row .rt{flex:1;min-width:0;font-size:15px;font-weight:700}
+.row .ck{flex-shrink:0;width:24px;height:24px;border-radius:8px;border:2px solid var(--grab);display:flex;align-items:center;justify-content:center;color:#000;transition:.2s}
+.row.on .ck{background:var(--lime);border-color:var(--lime)}
+.row .ck svg{width:14px;height:14px;opacity:0}.row.on .ck svg{opacity:1}
+.empty{text-align:center;padding:40px 16px;font-size:13px;color:var(--mute);line-height:1.9}
+
+/* wheel date picker */
+.wl,.wheels{display:grid;grid-template-columns:1fr 1.5fr 1.1fr;gap:6px;direction:rtl}
+.wl{margin-bottom:4px}
+.wl span{text-align:center;font-size:11px;font-weight:800;color:var(--mute)}
+.wheels{position:relative;height:220px;border-radius:20px;background:var(--field);border:1px solid var(--line);overflow:hidden}
+.wheels::before{content:"";position:absolute;left:6px;right:6px;top:88px;height:44px;border-radius:14px;background:rgba(255,0,0,.1);border:1px solid rgba(255,0,0,.4);pointer-events:none;z-index:1}
+.wcol{height:220px;overflow-y:auto;scroll-snap-type:y mandatory;padding:88px 0;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 32%,#000 68%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 32%,#000 68%,transparent 100%)}
+.wcol::-webkit-scrollbar{display:none}
+.wi{height:44px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;scroll-snap-stop:always;font-size:16px;font-weight:600;color:var(--dim);cursor:pointer;transition:color .15s,font-size .15s;user-select:none;-webkit-user-select:none}
+.wi.sel{color:var(--strong);font-weight:800;font-size:18px}
+.wpv{margin:14px 0 0;text-align:center;font-size:13px;font-weight:700;color:var(--lime-ink)}
+
+.toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translate(-50%,30px);opacity:0;z-index:99;max-width:calc(100% - 36px);padding:12px 18px;border-radius:9999px;background:var(--card);border:1px solid rgba(251,113,133,.45);color:var(--err);box-shadow:0 10px 30px var(--shadow);font-size:13px;font-weight:700;transition:.4s var(--ease);pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media(max-width:360px){.otp{gap:6px}.otp input{height:58px;font-size:22px}.title{font-size:22px}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ===== light theme fixes ===== */
+html[data-theme=light] .glow{background:radial-gradient(circle,rgba(255,0,0,.12),rgba(255,0,0,0) 68%)}
+html[data-theme=light] .bub{background:rgba(21,21,25,.78);border-color:rgba(255,255,255,.25);color:#fff}
+html[data-theme=light] .pd.p2{background:rgba(15,23,42,.35)}
+html[data-theme=light] .pd.p3{background:rgba(15,23,42,.08)}
+html[data-theme=light] .devhint{background:rgba(245,158,11,.1);border-color:rgba(217,119,6,.45);color:#92400e}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="glow"></div><div class="dots"></div>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="hero">
+    <h1 class="mini">
+      <svg class="brand" viewBox="0 0 114 93" role="img" aria-label="KOJO"><path fill="currentColor" fill-rule="evenodd" d="M 52.50,69.50 L 51.25,70.00 L 50.00,71.25 L 49.50,73.50 L 50.00,75.00 L 52.00,76.50 L 53.75,76.50 L 54.75,76.00 L 56.25,74.25 L 56.50,72.25 L 55.00,70.25 L 53.50,69.50 Z M 82.50,30.00 L 75.25,30.00 L 73.25,31.50 L 72.75,32.75 L 72.75,63.25 L 73.25,65.50 L 76.25,68.50 L 77.25,68.50 L 78.50,66.25 L 78.50,62.25 L 77.75,61.50 L 77.75,35.75 L 79.00,35.00 L 79.75,35.25 L 80.50,36.25 L 80.25,69.00 L 80.00,70.25 L 78.50,72.00 L 77.25,72.50 L 73.25,72.50 L 73.00,77.50 L 73.75,78.00 L 80.25,77.75 L 82.75,76.25 L 83.75,75.00 L 84.75,72.50 L 84.75,70.75 L 85.25,69.50 L 85.25,32.75 L 84.50,31.50 Z M 63.75,31.50 L 61.75,30.25 L 59.50,29.75 L 52.50,30.00 L 49.00,32.00 L 47.25,34.00 L 45.75,38.25 L 45.75,42.00 L 46.50,42.50 L 51.25,42.50 L 51.75,38.50 L 52.25,37.50 L 54.00,35.75 L 55.00,35.50 L 59.50,35.75 L 61.00,37.25 L 61.75,38.75 L 62.00,48.25 L 61.00,50.50 L 59.25,52.25 L 57.50,53.00 L 54.75,53.25 L 52.25,55.00 L 50.25,58.00 L 50.00,59.25 L 49.25,60.00 L 48.50,60.00 L 47.50,59.00 L 45.75,58.25 L 41.00,58.25 L 40.00,57.50 L 40.00,30.50 L 39.50,30.00 L 30.50,30.00 L 28.25,31.50 L 27.25,33.25 L 27.00,34.75 L 27.25,64.00 L 29.00,67.25 L 31.25,68.25 L 32.25,67.50 L 32.50,63.25 L 33.25,62.50 L 34.25,62.50 L 35.00,63.25 L 34.75,68.50 L 33.25,70.00 L 32.50,70.25 L 28.00,70.50 L 27.75,75.25 L 28.25,75.75 L 34.75,75.75 L 37.00,74.75 L 38.75,73.00 L 40.00,69.25 L 40.00,63.75 L 40.50,63.25 L 46.75,63.25 L 49.00,64.00 L 50.50,66.25 L 55.25,66.00 L 55.75,60.50 L 57.00,59.00 L 58.50,58.25 L 62.00,57.50 L 63.75,56.50 L 66.00,54.25 L 67.75,50.00 L 67.75,38.25 L 66.50,34.50 Z M 34.50,35.25 L 35.00,35.75 L 35.00,58.50 L 33.50,59.75 L 32.50,59.75 L 32.00,59.25 L 32.00,36.75 L 33.00,35.25 Z M 99.50,16.50 L 99.00,16.50 L 94.25,20.00 L 90.25,23.75 L 90.00,24.50 L 90.00,30.00 L 92.00,33.75 L 92.75,36.25 L 92.75,60.25 L 92.25,61.25 L 91.25,62.00 L 90.00,62.00 L 89.00,61.50 L 88.00,61.75 L 87.50,64.25 L 89.25,67.50 L 95.00,67.25 L 96.00,66.75 L 97.75,64.50 L 98.00,34.50 L 97.75,32.75 L 96.75,31.25 L 96.50,29.75 L 95.00,27.00 L 95.00,26.00 L 99.50,21.75 Z"/></svg>
+    </h1>
+    <div class="stage" aria-hidden="true">
+      <div class="stage-in">
+        <i class="pd p1"></i><i class="pd p2"></i><i class="pd p3"></i><i class="pd p4"></i><i class="pd p5"></i><i class="pd p6"></i>
+        <div class="av a" data-av="a"></div>
+        <div class="av b" data-av="b"></div>
+        <div class="av c" data-av="c"></div>
+        <div class="bub">!سلام</div>
+      </div>
+    </div>
+    <h2 class="title" id="title"></h2>
+  </section>
+
+  <!-- ============ CARD ============ -->
+  <main class="card" id="card">
+
+    <!-- LOGIN -->
+    <form class="view show" id="v-login" novalidate>
+      <div class="body">
+        <p class="p">شماره موبایلت رو وارد کن تا کد ورود برات پیامک بشه.</p>
+        <div class="fields">
+          <div class="field">
+            <label class="lbl" for="l-phone">شماره موبایل</label>
+            <div class="prow">
+              <div class="box" id="b-l-phone">
+                <input id="l-phone" class="ltr" type="tel" inputmode="numeric" autocomplete="tel" maxlength="11" enterkeyhint="go" />
+              </div>
+            </div>
+            <div class="err" id="e-l-phone"></div>
+          </div>
+        </div>
+      </div>
+      <div class="subwrap"><button class="btn sub" type="submit"><span class="lbtn">ورود</span><span class="spin"></span></button></div>
+    </form>
+
+    <!-- SIGNUP -->
+    <form class="view" id="v-signup" novalidate>
+      <div class="body">
+        <div class="fields">
+          <div class="field">
+            <label class="lbl" for="s-name">نام کامل</label>
+            <div class="box" id="b-s-name">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              <input id="s-name" type="text" autocomplete="name" maxlength="40" enterkeyhint="next" />
+            </div>
+            <div class="err" id="e-s-name"></div>
+          </div>
+          <div class="field">
+            <label class="lbl" for="s-user">نام کاربری</label>
+            <div class="box" id="b-s-user">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>
+              <input id="s-user" class="ltr" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20" enterkeyhint="next" />
+              <svg class="ok-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>
+            </div>
+            <div class="err" id="e-s-user"></div>
+          </div>
+          <div class="field">
+            <label class="lbl" for="s-phone">شماره موبایل</label>
+            <div class="prow">
+              <div class="box" id="b-s-phone">
+                <input id="s-phone" class="ltr" type="tel" inputmode="numeric" autocomplete="tel" maxlength="11" />
+              </div>
+            </div>
+            <div class="err" id="e-s-phone"></div>
+          </div>
+          <div class="field">
+            <span class="lbl">شهر</span>
+            <button type="button" class="box pick" id="b-s-city" aria-haspopup="dialog">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+              <span class="v ph" id="city-v">انتخاب شهر</span>
+              <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+            </button>
+            <div class="err" id="e-s-city"></div>
+          </div>
+          <div class="field">
+            <span class="lbl">تاریخ تولد <span style="color:var(--dim);font-weight:600">(شمسی)</span></span>
+            <div class="row3" id="dob">
+              <button type="button" class="box pick" id="p-d" data-col="d"><span class="v ph">روز</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+              <button type="button" class="box pick" id="p-m" data-col="m"><span class="v ph">ماه</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+              <button type="button" class="box pick" id="p-y" data-col="y"><span class="v ph">سال</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+            </div>
+            <div class="bd" id="bd"></div>
+            <div class="err" id="e-s-dob"></div>
+          </div>
+        </div>
+        <p class="fine">با ثبت‌نام، <a href="#terms">قوانین و حریم خصوصی</a> KOJO را می‌پذیری.</p>
+      </div>
+      <div class="subwrap"><button class="btn sub" type="submit"><span class="lbtn">ثبت‌نام</span><span class="spin"></span></button></div>
+    </form>
+
+    <!-- OTP -->
+    <form class="view" id="v-otp" novalidate>
+      <div class="body">
+        <div class="otp-top">
+          <button class="rb" type="button" id="otp-back" aria-label="بازگشت"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+          <span class="tag" id="otp-step">مرحله‌ی تأیید شماره</span>
+        </div>
+        <div class="otp-hero">
+          <div class="ring" id="ring">
+            <svg class="r" viewBox="0 0 104 104"><circle class="tr" cx="52" cy="52" r="46"/><circle class="pr" id="pr" cx="52" cy="52" r="46"/></svg>
+            <div class="in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01" stroke-width="2.6"/></svg></div>
+          </div>
+          <p class="p" style="margin-bottom:8px">کد ۵ رقمی برای این شماره پیامک شد</p>
+          <button type="button" class="chip" id="otp-edit"><span id="otp-to"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/></svg></button>
+        </div>
+        <div class="otp" id="otp" dir="ltr">
+          <input inputmode="numeric" autocomplete="one-time-code" maxlength="1" aria-label="رقم ۱" />
+          <input inputmode="numeric" maxlength="1" aria-label="رقم ۲" />
+          <input inputmode="numeric" maxlength="1" aria-label="رقم ۳" />
+          <input inputmode="numeric" maxlength="1" aria-label="رقم ۴" />
+          <input inputmode="numeric" maxlength="1" aria-label="رقم ۵" />
+        </div>
+        <div class="err otp-err" id="e-otp"></div>
+        <div class="resend"><span id="rs-txt">ارسال مجدد کد تا</span><span class="timer" id="timer">۰۲:۰۰</span><button type="button" class="link" id="rs-btn" hidden>ارسال مجدد کد</button></div>
+        <div class="devhint" id="devhint" hidden>حالت نمایشی: کد ورود <b>12345</b> است.</div>
+      </div>
+      <div class="subwrap"><button class="btn sub" type="submit" id="otp-btn"><span class="lbtn" id="otp-lbl">ورود</span><svg class="lbtn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg><span class="spin"></span></button></div>
+    </form>
+
+    <!-- bottom switcher -->
+    <nav class="dock" id="dock" aria-label="ورود یا ثبت‌نام">
+      <div class="wv" id="wv" aria-hidden="true"><svg viewBox="0 0 260 70" preserveAspectRatio="none"><path d="M0 70C60 70 70 12 130 12S200 70 260 70Z"/></svg></div>
+      <button type="button" class="dk on" data-go="login">ورود</button>
+      <button type="button" class="dk" data-go="signup">ثبت‌نام</button>
+    </nav>
+  </main>
+
+  <!-- DONE -->
+  <div class="view" id="v-done">
+    <div class="done">
+      <div class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></div>
+      <h2 class="h" id="done-t">خوش اومدی!</h2>
+      <p class="p" id="done-p" style="margin-bottom:0">در حال انتقال به صفحه‌ی اصلی…</p>
+    </div>
+  </div>
+</div>
+
+<!-- City sheet -->
+<div class="ov" id="city-ov" role="dialog" aria-modal="true" aria-label="انتخاب شهر">
+  <div class="sheet tall">
+    <div class="grab"></div>
+    <div class="sh-h"><div><h3>انتخاب شهر</h3><small>شهر محل زندگی‌ات را انتخاب کن</small></div><button class="sh-x" type="button" id="city-x" aria-label="بستن"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="sh-b">
+      <div class="sw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="city-q" type="search" placeholder="جستجوی شهر" enterkeyhint="search" autocomplete="off" aria-label="جستجوی شهر" /></div>
+      <div class="plist" id="city-list" role="listbox"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Birth date sheet (wheels) -->
+<div class="ov" id="dob-ov" role="dialog" aria-modal="true" aria-label="تاریخ تولد">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sh-h"><div><h3>تاریخ تولد</h3><small>روز، ماه و سال را بچرخان</small></div><button class="sh-x" type="button" id="dob-x" aria-label="بستن"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="sh-b">
+      <div class="wl"><span>روز</span><span>ماه</span><span>سال</span></div>
+      <div class="wheels" id="wheels"></div>
+      <div class="wpv" id="wpv"></div>
+    </div>
+    <div class="sh-f"><button type="button" class="ghost" id="dob-clear">پاک کردن</button><button type="button" class="btn" id="dob-ok">تایید</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+<script>
+/* =====================================================================
+   CONFIG — برای اتصال به بک‌اند PHP فقط همین بخش را تغییر بده
+   MOCK:true  → حالت نمایشی (بدون سرور؛ کد ورود 12345)
+   MOCK:false → درخواست‌های واقعی fetch به آدرس‌های زیر ارسال می‌شود
+   ---------------------------------------------------------------------
+   POST send_otp  {phone, purpose:'login'|'signup', profile?}  → {ok:true} | {ok:false,error,field?}
+   POST verify    {phone, code, purpose, profile?}             → {ok:true, user:{name}} | {ok:false,error}
+   POST check_user{username}                                   → {available:true|false}
+   ===================================================================== */
+const CONFIG = {
+  MOCK: true,
+  MOCK_CODE: '12345',
+  OTP_SECONDS: 120,
+  REDIRECT: '',            // مثلاً '/index.php' — خالی = بدون انتقال
+  API: { send_otp:'api/send_otp.php', verify:'api/verify.php', check_user:'api/check_user.php' }
+};
+
+/* ---------------- helpers ---------------- */
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const faD='۰۱۲۳۴۵۶۷۸۹', arD='٠١٢٣٤٥٦٧٨٩';
+const toEn = s => String(s).replace(/[۰-۹]/g,d=>faD.indexOf(d)).replace(/[٠-٩]/g,d=>arD.indexOf(d));
+const toFa = s => String(s).replace(/\d/g,d=>faD[d]);
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+let toastT;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),3200)}
+function setErr(id,boxId,msg){
+  const e=$('#'+id); if(e){e.textContent=msg||'';e.classList.toggle('on',!!msg)}
+  const b=boxId&&$('#'+boxId); if(b) b.classList.toggle('bad',!!msg);
+}
+function loading(form,on){const b=$('.sub',form);b.classList.toggle('load',on);b.disabled=on}
+
+async function api(name,payload){
+  if(CONFIG.MOCK){
+    await sleep(700);
+    if(name==='send_otp') return {ok:true};
+    if(name==='verify') return payload.code===CONFIG.MOCK_CODE ? {ok:true,user:{name:payload.name||''}} : {ok:false,error:'کد واردشده درست نیست'};
+    if(name==='check_user') return {available: !['admin','kojo','root'].includes(payload.username)};
+  }
+  const r = await fetch(CONFIG.API[name],{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(payload)});
+  return r.json();
+}
+
+/* fit to the visible viewport (keyboard-safe on phones) */
+(function(){
+  const root=document.documentElement;
+  const fit=()=>{
+    const h=(window.visualViewport?window.visualViewport.height:window.innerHeight);
+    root.style.setProperty('--vh',h+'px');
+    $('#hero').classList.toggle('tight',h<700);
+    if(window.visualViewport) window.scrollTo(0,0);
+  };
+  if(window.visualViewport){visualViewport.addEventListener('resize',fit);visualViewport.addEventListener('scroll',fit)}
+  addEventListener('resize',fit);fit();
+})();
+
+/* ---------------- hero avatars (inline SVG) ---------------- */
+let gid=0;
+function avatar({bg,skin,hair,shirt,type}){
+  const id='g'+(gid++);
+  const back = type==='long' ? `<path d="M25 54C19 18 81 18 75 54L76 76H24Z" fill="${hair}"/>` : '';
+  const top = type==='cap'
+    ? `<path d="M27 43C27 17 73 17 73 43Z" fill="${hair}"/><rect x="24" y="41" width="52" height="6" rx="3" fill="${hair}"/>`
+    : type==='long'
+    ? `<path d="M28 46C30 28 70 28 72 46C62 38 42 36 28 46Z" fill="${hair}"/>`
+    : `<path d="M28 47C24 20 76 20 72 47C68 36 56 33 50 33C42 33 32 36 28 47Z" fill="${hair}"/>`;
+  return `<svg viewBox="0 0 100 100"><defs><radialGradient id="${id}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+  <rect width="100" height="100" fill="${bg}"/>${back}
+  <ellipse cx="50" cy="104" rx="34" ry="28" fill="${shirt}"/>
+  <rect x="43" y="62" width="14" height="14" rx="6" fill="${skin}"/>
+  <circle cx="29" cy="52" r="4.5" fill="${skin}"/><circle cx="71" cy="52" r="4.5" fill="${skin}"/>
+  <circle cx="50" cy="50" r="22" fill="${skin}"/><circle cx="50" cy="50" r="22" fill="url(#${id})"/>${top}
+  <circle cx="41" cy="52" r="2.8" fill="#1a1a1a"/><circle cx="59" cy="52" r="2.8" fill="#1a1a1a"/>
+  <circle cx="42" cy="51" r=".9" fill="#fff"/><circle cx="60" cy="51" r=".9" fill="#fff"/>
+  <path d="M43 60Q50 66 57 60" fill="none" stroke="#7a3b2a" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="35" cy="59" r="3.2" fill="#ff8f8f" opacity=".35"/><circle cx="65" cy="59" r="3.2" fill="#ff8f8f" opacity=".35"/></svg>`;
+}
+const AV={
+  a:{bg:'#ff0000',skin:'#f1c7a3',hair:'#3b2a20',shirt:'#0d0d0d',type:'short'},
+  b:{bg:'#161616',skin:'#e3ab85',hair:'#ff0000',shirt:'#f4f4f5',type:'cap'},
+  c:{bg:'#ffc2c2',skin:'#f6d3b4',hair:'#5a3524',shirt:'#2a2d34',type:'long'}
+};
+$$('[data-av]').forEach(el=>el.innerHTML=avatar(AV[el.dataset.av]));
+
+/* ---------------- data ---------------- */
+const CITIES=['تهران','شیراز','اصفهان'];
+const MONTHS=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const YEAR_MAX=1392, YEAR_MIN=1300;   // حداقل سن ≈ ۱۳ سال
+
+/* ---------------- Jalali helpers ---------------- */
+const jLeap = y => [1,5,9,13,17,22,26,30].includes(y%33);
+const jDays = (y,m) => m<=6?31:(m<=11?30:(jLeap(y)?30:29));
+function j2g(jy,jm,jd){
+  jy+=1595; let days=-355668+(365*jy)+(~~(jy/33))*8+~~(((jy%33)+3)/4)+jd+((jm<7)?(jm-1)*31:((jm-7)*30)+186);
+  let gy=400*~~(days/146097); days%=146097;
+  if(days>36524){gy+=100*~~(--days/36524);days%=36524;if(days>=365)days++}
+  gy+=4*~~(days/1461);days%=1461;
+  if(days>365){gy+=~~((days-1)/365);days=(days-1)%365}
+  let gd=days+1;
+  const a=[0,31,((gy%4==0&&gy%100!=0)||(gy%400==0))?29:28,31,30,31,30,31,31,30,31,30,31];
+  let gm; for(gm=0;gm<13&&gd>a[gm];gm++)gd-=a[gm];
+  return [gy,gm,gd];
+}
+const birthText = b => `${toFa(b.d)} ${MONTHS[b.m-1]} ${toFa(b.y)}`;
+
+/* ---------------- state ---------------- */
+const S={mode:'login',phone:'',profile:null,city:null,birth:null,timer:null,sec:0,userOk:null};
+
+/* ---------------- hero title + view switching ---------------- */
+const TITLES={
+  login:'بریم وارد<br><span class="hl">بشیم!</span>',
+  signup:'بیا حساب جدید<br><span class="hl">بسازیم!</span>',
+  otp:'کد تأیید رو<br><span class="hl">وارد کن</span>'
+};
+function setHero(state){
+  $('#title').innerHTML=TITLES[state];
+  $('#hero').classList.toggle('compact',state!=='login');
+  $('#card').dataset.s=state;
+}
+function show(id){
+  $$('.view').forEach(v=>v.classList.remove('show'));
+  const v=$('#'+id); void v.offsetWidth; v.classList.add('show');
+}
+function placeWave(){
+  const b=$('.dk.on'), wv=$('#wv'); if(!b||!b.offsetWidth) return;
+  wv.style.width=Math.min(210,b.offsetWidth*1.05)+'px';
+  wv.style.transform=`translateX(${b.offsetLeft+b.offsetWidth/2-wv.offsetWidth/2}px)`;
+}
+function setMode(m){
+  const changed=S.mode!==m||$('#card').dataset.s==='otp';
+  S.mode=m; setHero(m);
+  $$('.dk').forEach(b=>b.classList.toggle('on',b.dataset.go===m));
+  placeWave();
+  if(changed&&S.mode!==undefined){const w=$('#wv');w.classList.remove('moving');void w.offsetWidth;w.classList.add('moving')}
+  show(m==='login'?'v-login':'v-signup');
+}
+$$('[data-go]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.go)));
+setHero('login');
+requestAnimationFrame(()=>{placeWave();requestAnimationFrame(()=>$('#wv').classList.add('ready'))});
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(placeWave);
+addEventListener('resize',placeWave);
+
+/* ---------------- phone ---------------- */
+function bindPhone(id,boxId,errId){
+  const i=$('#'+id);
+  i.addEventListener('input',()=>{i.value=toEn(i.value).replace(/\D/g,'').slice(0,11);setErr(errId,boxId,'')});
+}
+bindPhone('l-phone','b-l-phone','e-l-phone');
+bindPhone('s-phone','b-s-phone','e-s-phone');
+const phoneOk = p => /^09\d{9}$/.test(p);
+$('#s-name').addEventListener('input',()=>setErr('e-s-name','b-s-name',''));
+
+/* ---------------- username ---------------- */
+const uIn=$('#s-user'); let uT;
+uIn.addEventListener('input',()=>{
+  uIn.value=toEn(uIn.value).toLowerCase().replace(/[^a-z0-9_.]/g,'').slice(0,20);
+  $('#b-s-user').classList.remove('valid'); S.userOk=null; setErr('e-s-user','b-s-user','');
+  clearTimeout(uT);
+  const v=uIn.value;
+  if(v.length>=3 && /^[a-z]/.test(v)){
+    uT=setTimeout(async()=>{
+      try{
+        const r=await api('check_user',{username:v});
+        if(uIn.value!==v) return;
+        S.userOk=!!r.available;
+        if(r.available) $('#b-s-user').classList.add('valid');
+        else setErr('e-s-user','b-s-user','این نام کاربری قبلاً گرفته شده');
+      }catch(e){S.userOk=null}
+    },450);
+  }
+});
+
+/* ---------------- sheets ---------------- */
+function openOv(ov){ov.classList.add('open')}
+function closeOv(ov){ov.classList.remove('open')}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$$('.ov.open').forEach(closeOv)});
+$$('.ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeOv(o)}));
+
+/* swipe-down to close */
+$$('.ov').forEach(ov=>{
+  const sh=$('.sheet',ov), grip=[$('.grab',ov),$('.sh-h',ov)]; let y0=null,dy=0;
+  grip.forEach(g=>{
+    g.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;dy=0;sh.style.transition='none'},{passive:true});
+    g.addEventListener('touchmove',e=>{if(y0===null)return;dy=Math.max(0,e.touches[0].clientY-y0);sh.style.transform=`translateY(${dy}px)`},{passive:true});
+    g.addEventListener('touchend',()=>{if(y0===null)return;sh.style.transition='';sh.style.transform='';if(dy>90)closeOv(ov);y0=null});
+  });
+});
+
+/* ---------------- city picker ---------------- */
+const cityOv=$('#city-ov'),cityList=$('#city-list'),cq=$('#city-q');
+const PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>';
+const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>';
+const norm = s => s.replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/[‌\s]/g,'');
+function renderCities(q=''){
+  const k=norm(q), items=CITIES.filter(c=>!k||norm(c).includes(k));
+  cityList.innerHTML=items.length
+    ? items.map(c=>`<button type="button" role="option" class="row${S.city===c?' on':''}" data-c="${c}"><span class="ri">${PIN}</span><span class="rt">${c}</span><span class="ck">${CHECK}</span></button>`).join('')
+    : '<div class="empty">شهری با این نام پیدا نشد.</div>';
+}
+$('#b-s-city').addEventListener('click',()=>{
+  renderCities();cq.value='';openOv(cityOv);
+  setTimeout(()=>{const on=$('.row.on',cityList);if(on)cityList.scrollTop=on.offsetTop-cityList.clientHeight/2+on.offsetHeight/2},80);
+});
+$('#city-x').addEventListener('click',()=>closeOv(cityOv));
+cq.addEventListener('input',()=>renderCities(cq.value));
+cq.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();cq.blur()}});
+cityList.addEventListener('click',e=>{
+  const b=e.target.closest('.row'); if(!b) return;
+  S.city=b.dataset.c;
+  $$('.row',cityList).forEach(r=>r.classList.toggle('on',r===b));
+  const v=$('#city-v'); v.textContent=S.city; v.classList.remove('ph'); $('#b-s-city').classList.add('has');
+  setErr('e-s-city','b-s-city','');
+  setTimeout(()=>closeOv(cityOv),160);
+});
+
+/* ---------------- birth date: wheel picker ---------------- */
+const WH=44, dobOv=$('#dob-ov'), wbox=$('#wheels'), wpv=$('#wpv');
+let dp={y:0,m:0,d:0}, W=null;
+
+function makeWheel(onSettle){
+  const col=document.createElement('div'); col.className='wcol'; col.setAttribute('role','listbox');
+  const w={el:col,idx:0,n:0,t:null};
+  const mark=()=>{[...col.children].forEach((k,i)=>k.classList.toggle('sel',i===w.idx))};
+  w.set=(items,idx)=>{
+    col.innerHTML=''; w.n=items.length;
+    items.forEach((txt,i)=>{
+      const d=document.createElement('div'); d.className='wi'; d.textContent=txt; d.setAttribute('role','option');
+      d.addEventListener('click',()=>col.scrollTo({top:i*WH,behavior:'smooth'}));
+      col.appendChild(d);
+    });
+    w.idx=Math.max(0,Math.min(w.n-1,idx)); mark();
+    col.style.scrollSnapType='none'; col.scrollTop=w.idx*WH;
+    requestAnimationFrame(()=>{col.scrollTop=w.idx*WH;col.style.scrollSnapType=''});
+  };
+  col.addEventListener('scroll',()=>{
+    const i=Math.max(0,Math.min(w.n-1,Math.round(col.scrollTop/WH)));
+    if(i!==w.idx){w.idx=i;mark();if(navigator.vibrate){try{navigator.vibrate(4)}catch(e){}}}
+    clearTimeout(w.t); w.t=setTimeout(()=>onSettle(w.idx),120);
+  },{passive:true});
+  return w;
+}
+const years=[]; for(let y=YEAR_MAX;y>=YEAR_MIN;y--) years.push(y);
+const DASH='—';
+const dayItems = n => [DASH,...Array.from({length:n},(_,i)=>toFa(i+1))];
+function prevDob(){wpv.textContent=(dp.y&&dp.m&&dp.d)?'🎂 '+birthText(dp):''}
+function fixDays(){const n=(dp.y&&dp.m)?jDays(dp.y,dp.m):31; if(dp.d>n)dp.d=n; if(W.d.n!==n+1)W.d.set(dayItems(n),dp.d)}
+function buildWheels(){
+  wbox.innerHTML='';
+  W={
+    d:makeWheel(i=>{dp.d=i;prevDob()}),
+    m:makeWheel(i=>{dp.m=i;fixDays();prevDob()}),
+    y:makeWheel(i=>{dp.y=i?years[i-1]:0;fixDays();prevDob()})
+  };
+  wbox.append(W.d.el,W.m.el,W.y.el);
+}
+function openDob(){
+  dp = S.birth ? {...S.birth} : {y:0,m:0,d:0};
+  buildWheels(); openOv(dobOv);
+  W.d.set(dayItems((dp.y&&dp.m)?jDays(dp.y,dp.m):31),dp.d);
+  W.m.set([DASH,...MONTHS],dp.m);
+  W.y.set([DASH,...years.map(toFa)],dp.y?years.indexOf(dp.y)+1:0);
+  prevDob();
+  setTimeout(()=>{[W.d,W.m,W.y].forEach(w=>w.el.scrollTop=w.idx*WH)},60);
+}
+$$('#dob .pick').forEach(b=>b.addEventListener('click',openDob));
+$('#dob-x').addEventListener('click',()=>closeOv(dobOv));
+function paintDob(){
+  const b=S.birth;
+  const set=(id,t,ph)=>{const el=$('#'+id);el.classList.toggle('has',!!t);const v=$('.v',el);v.textContent=t||ph;v.classList.toggle('ph',!t)};
+  set('p-d',b?toFa(b.d):'','روز'); set('p-m',b?MONTHS[b.m-1]:'','ماه'); set('p-y',b?toFa(b.y):'','سال');
+  const bd=$('#bd'); bd.textContent=b?'🎂 '+birthText(b):''; bd.classList.toggle('on',!!b);
+  $$('#dob .pick').forEach(x=>x.classList.remove('bad'));
+}
+$('#dob-ok').addEventListener('click',()=>{
+  if(!(dp.y&&dp.m&&dp.d)){wpv.textContent='روز، ماه و سال را کامل انتخاب کن';return}
+  const n=jDays(dp.y,dp.m); if(dp.d>n)dp.d=n;
+  S.birth={...dp}; paintDob(); setErr('e-s-dob',null,''); closeOv(dobOv);
+});
+$('#dob-clear').addEventListener('click',()=>{S.birth=null;paintDob();closeOv(dobOv)});
+
+/* ---------------- OTP ---------------- */
+const otpBox=$('#otp'), cells=$$('input',otpBox), CIRC=289;
+const getCode=()=>cells.map(c=>c.value).join('');
+cells.forEach((c,i)=>{
+  c.addEventListener('input',()=>{
+    c.value=toEn(c.value).replace(/\D/g,'').slice(-1);
+    c.classList.toggle('f',!!c.value);
+    otpBox.classList.remove('bad'); setErr('e-otp',null,'');
+    if(c.value&&i<cells.length-1) cells[i+1].focus();
+    if(getCode().length===cells.length) $('#v-otp').requestSubmit();
+  });
+  c.addEventListener('keydown',e=>{
+    if(e.key==='Backspace'&&!c.value&&i>0){cells[i-1].value='';cells[i-1].classList.remove('f');cells[i-1].focus()}
+    if(e.key==='ArrowLeft'&&i<cells.length-1) cells[i+1].focus();
+    if(e.key==='ArrowRight'&&i>0) cells[i-1].focus();
+  });
+  c.addEventListener('focus',()=>c.select());
+  c.addEventListener('paste',e=>{
+    e.preventDefault();
+    const d=toEn((e.clipboardData||window.clipboardData).getData('text')).replace(/\D/g,'').slice(0,cells.length);
+    d.split('').forEach((ch,k)=>{cells[k].value=ch;cells[k].classList.add('f')});
+    cells[Math.min(d.length,cells.length-1)].focus();
+    if(d.length===cells.length) $('#v-otp').requestSubmit();
+  });
+});
+function clearOtp(){cells.forEach(c=>{c.value='';c.classList.remove('f')});otpBox.classList.remove('bad');setErr('e-otp',null,'')}
+
+function startTimer(){
+  clearInterval(S.timer); S.sec=CONFIG.OTP_SECONDS;
+  const t=$('#timer'),b=$('#rs-btn'),x=$('#rs-txt'),pr=$('#pr'),ring=$('#ring');
+  b.hidden=true;t.hidden=false;x.hidden=false;ring.classList.remove('end');
+  pr.style.transition='none';pr.style.strokeDashoffset=0;void pr.getBoundingClientRect();pr.style.transition='';
+  const tick=()=>{
+    const m=String(~~(S.sec/60)).padStart(2,'0'),s=String(S.sec%60).padStart(2,'0');
+    t.textContent=toFa(`${m}:${s}`);
+    pr.style.strokeDashoffset=CIRC*(1-S.sec/CONFIG.OTP_SECONDS);
+    if(S.sec<=0){clearInterval(S.timer);t.hidden=true;x.hidden=true;b.hidden=false;ring.classList.add('end')}
+    S.sec--;
+  }; tick(); S.timer=setInterval(tick,1000);
+}
+const sendOtp = () => api('send_otp',{phone:S.phone,purpose:S.mode,profile:S.profile});
+function toOtp(){
+  $('#otp-to').textContent=S.phone;
+  $('#otp-lbl').textContent=S.mode==='signup'?'تأیید و ساخت حساب':'ورود';
+  $('#devhint').hidden=!CONFIG.MOCK;
+  setHero('otp');
+  clearOtp(); show('v-otp'); startTimer();
+  setTimeout(()=>cells[0].focus(),350);
+}
+const backToForm=()=>{clearInterval(S.timer);setMode(S.mode)};
+$('#otp-back').addEventListener('click',backToForm);
+$('#otp-edit').addEventListener('click',backToForm);
+
+/* login submit */
+$('#v-login').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const p=toEn($('#l-phone').value);
+  if(!phoneOk(p)) return setErr('e-l-phone','b-l-phone','شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد');
+  S.phone=p;S.profile=null; loading(e.target,true);
+  try{
+    const r=await sendOtp();
+    if(!r.ok) setErr('e-l-phone','b-l-phone',r.error||'ارسال کد ناموفق بود'); else toOtp();
+  }catch(err){toast('اتصال به سرور برقرار نشد')}
+  loading(e.target,false);
+});
+
+/* signup submit */
+$('#v-signup').addEventListener('submit',async e=>{
+  e.preventDefault();
+  let bad=null;
+  const name=$('#s-name').value.trim().replace(/\s+/g,' '), user=uIn.value, phone=toEn($('#s-phone').value);
+  const fail=(a,b,m)=>{setErr(a,b,m);bad=bad||$('#'+b)};
+  if(name.split(' ').filter(Boolean).length<2||name.length<4) fail('e-s-name','b-s-name','نام و نام خانوادگی را کامل بنویس');
+  if(!/^[a-z][a-z0-9_.]{2,19}$/.test(user)) fail('e-s-user','b-s-user','۳ تا ۲۰ کاراکتر، با حرف انگلیسی شروع شود (حروف، عدد، _ و .)');
+  else if(S.userOk===false) fail('e-s-user','b-s-user','این نام کاربری قبلاً گرفته شده');
+  if(!phoneOk(phone)) fail('e-s-phone','b-s-phone','شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد');
+  if(!S.city) fail('e-s-city','b-s-city','شهرت را انتخاب کن');
+  if(!S.birth){setErr('e-s-dob',null,'تاریخ تولد را انتخاب کن');$$('#dob .pick').forEach(x=>x.classList.add('bad'));bad=bad||$('#p-d')}
+  if(bad){bad.scrollIntoView({behavior:'smooth',block:'center'});return}
+  const {y,m,d}=S.birth, [gy,gm,gd]=j2g(y,m,d), z=n=>String(n).padStart(2,'0');
+  S.phone=phone;
+  S.profile={full_name:name,username:user,city:S.city,birth_jalali:`${y}/${z(m)}/${z(d)}`,birth_date:`${gy}-${z(gm)}-${z(gd)}`};
+  loading(e.target,true);
+  try{
+    const r=await sendOtp();
+    if(!r.ok){
+      if(r.field==='username') setErr('e-s-user','b-s-user',r.error);
+      else if(r.field==='phone') setErr('e-s-phone','b-s-phone',r.error);
+      else toast(r.error||'ثبت‌نام ناموفق بود');
+    } else toOtp();
+  }catch(err){toast('اتصال به سرور برقرار نشد')}
+  loading(e.target,false);
+});
+
+/* otp submit */
+$('#v-otp').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const code=getCode();
+  if(code.length<cells.length) return setErr('e-otp',null,'کد ۵ رقمی را کامل وارد کن');
+  loading(e.target,true);
+  try{
+    const r=await api('verify',{phone:S.phone,code,purpose:S.mode,profile:S.profile,name:S.profile&&S.profile.full_name});
+    if(!r.ok){otpBox.classList.remove('bad');void otpBox.offsetWidth;otpBox.classList.add('bad');setErr('e-otp',null,r.error||'کد واردشده درست نیست')}
+    else{
+      clearInterval(S.timer);
+      const first=(((r.user&&r.user.name)||(S.profile&&S.profile.full_name)||'')).split(' ')[0];
+      $('#done-t').textContent=S.mode==='signup'?`حساب ساخته شد${first?'، '+first:''} 🎉`:`خوش اومدی${first?' '+first:''}!`;
+      show('v-done');
+      if(CONFIG.REDIRECT) setTimeout(()=>location.href=CONFIG.REDIRECT,1400);
+      else $('#done-p').textContent='ورود با موفقیت انجام شد.';
+      document.dispatchEvent(new CustomEvent('kojo:auth',{detail:{mode:S.mode,phone:S.phone,profile:S.profile,user:r.user||null}}));
+    }
+  }catch(err){toast('اتصال به سرور برقرار نشد')}
+  loading(e.target,false);
+});
+$('#rs-btn').addEventListener('click',async()=>{
+  try{const r=await sendOtp(); if(r.ok){clearOtp();startTimer();cells[0].focus()} else toast(r.error||'ارسال مجدد ناموفق بود')}
+  catch(e){toast('اتصال به سرور برقرار نشد')}
+});
+
+/* WebOTP (Android Chrome): auto-fill from SMS */
+if('OTPCredential' in window){
+  navigator.credentials.get({otp:{transport:['sms']}}).then(o=>{
+    if(!o||!o.code) return; const d=toEn(o.code).replace(/\D/g,'').slice(0,5);
+    d.split('').forEach((ch,k)=>{cells[k]&&(cells[k].value=ch,cells[k].classList.add('f'))});
+    if(d.length===5) $('#v-otp').requestSubmit();
+  }).catch(()=>{});
+}
+</script>
+</body>
+</html>
